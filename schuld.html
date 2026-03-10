@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zomer Masterplan 2026</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f4f8; 
+            padding: 20px; 
+            color: #2d3748; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 700px; 
+            margin: 0 auto; 
+        }
+        h1 { 
+            text-align: center; 
+            color: #1a365d; 
+            margin-bottom: 5px;
+            font-size: 2.2em;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+        }
+        .pot-widget {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .pot-widget h2 { margin: 0; font-size: 1.2em; font-weight: normal; opacity: 0.9; }
+        .pot-widget .amount { font-size: 3em; font-weight: bold; margin: 10px 0; }
+        .pot-widget .note { font-size: 0.9em; opacity: 0.8; }
+        
+        .timeline { display: flex; flex-direction: column; gap: 20px; }
+        .month-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-left: 6px solid #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        .month-card.active { border-left-color: #48bb78; }
+        .month-card.upcoming { border-left-color: #ecc94b; }
+        
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 10px;
+        }
+        .month-title { font-size: 1.4em; font-weight: bold; color: #2d3748; margin: 0; }
+        .payday { font-size: 0.9em; color: #718096; background: #edf2f7; padding: 4px 10px; border-radius: 20px; font-weight: bold;}
+        
+        .task-list { list-style: none; padding: 0; margin: 0; }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .task-item:last-child { border-bottom: none; }
+        .task-name { display: flex; align-items: center; gap: 10px; }
+        .amount-out { color: #e53e3e; font-weight: bold; }
+        .amount-in { color: #38a169; font-weight: bold; }
+        .amount-save { color: #3182ce; font-weight: bold; }
+        
+        .save-action {
+            background: #ebf8ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #bee3f8;
+        }
+        .save-action button {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .save-action button:hover { background: #2b6cb0; }
+        .save-action button:disabled { background: #a0aec0; cursor: not-allowed; }
+        
+        .warning-box {
+            background: #fffaf0;
+            border-left: 4px solid #dd6b20;
+            padding: 12px 15px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #9c4221;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mijn Zomer Masterplan</h1>
+        <p class="subtitle">Schuldenvrij en maximaal genieten in Italië, Londen & Praag ✈️</p>
+
+        <div class="pot-widget">
+            <h2>Huidige stand van de Vakantiepot</h2>
+            <div class="amount" id="displayPot">€0.00</div>
+            <div class="note">Doel voor juli: €3132,00 leefgeld</div>
+        </div>
+
+        <div class="timeline" id="timeline">
+            </div>
+    </div>
+
+    <script>
+        // De blauwdruk van jouw plan
+        const plan = [
+            {
+                id: 'maart',
+                month: 'Maart',
+                status: 'active', // Kan 'active', 'upcoming' of 'done' zijn
+                paydayText: 'Salaris + DUO (24 maart)',
+                tasks: [
+                    { name: 'Vaste lasten (Abonnementjes)', amount: 50, type: 'out' },
+                    { name: 'Zalando afbetalen (Uiterlijk 24e!)', amount: 119, type: 'out' },
+                    { name: 'Jouw eigen zakgeld', amount: 200, type: 'out' }
+                ],
+                saveAmount: 1066, // €1435 - 50 - 119 - 200 = 1066 (Inclusief de €200 voor Center Parcs!)
+                warning: 'Bol.com is al betaald! Maak deze €1066 direct na de 24e over naar je spaarpotje.',
+                buttonText: 'Gedaan! €1066 in de pot gestort'
+            },
+            {
+                id: 'april',
+                month: 'April',
+                status: 'upcoming',
+                paydayText: 'Salaris + DUO (24 april)',
+                tasks: [
+                    { name: 'Vaste lasten', amount: 50, type: 'out' },
+                    { name: 'Vliegtickets Italië boeken', amount: 400, type: 'out' },
+                    { name: 'Jouw eigen zakgeld', amount: 200, type: 'out' }
+                ],
+                saveAmount: 785, // €1435 - 50 - 400 - 200 = 785
+                buttonText: 'Gedaan! €785 in de pot gestort'
+            },
+            {
+                id: 'mei',
+                month: 'Mei',
+                status: 'upcoming',
+                paydayText: 'Salaris + DUO (22 mei)',
+                tasks: [
+                    { name: 'Vaste lasten', amount: 50, type: 'out' },
+                    { name: 'Londen afbetalen (Uiterlijk 25 mei!)', amount: 630.35, type: 'out' },
+                    { name: 'Jouw eigen zakgeld', amount: 200, type: 'out' }
+                ],
+                saveAmount: 554.65, // €1435 - 50 - 630.35 - 200 = 554.65
+                warning: 'Let op: DUO is vroeg deze maand (vrijdag de 22e). Betaal Londen direct!',
+                buttonText: 'Gedaan! €554,65 in de pot gestort'
+            },
+            {
+                id: 'juni',
+                month: 'Juni',
+                status: 'upcoming',
+                paydayText: 'Salaris + DUO (24 juni)',
+                tasks: [
+                    { name: 'Praag afbetalen (19 juni - UIT DE POT!)', amount: 1642.89, type: 'out', fromPot: true },
+                    { name: 'Vaste lasten', amount: 50, type: 'out' },
+                    { name: 'Jouw eigen zakgeld', amount: 200, type: 'out' }
+                ],
+                saveAmount: 1185, // €1435 - 50 - 200 = 1185
+                warning: 'Cruciaal: Je moet Praag betalen op de 19e, vóórdat je loon/DUO er is. Haal dit bedrag tijdelijk uit je Vakantiepot.',
+                buttonText: 'Gedaan! Praag betaald & €1185 gestort'
+            },
+            {
+                id: 'juli',
+                month: 'Juli',
+                status: 'upcoming',
+                paydayText: 'Salaris + DUO (24 juli)',
+                tasks: [
+                    { name: 'Vaste lasten', amount: 50, type: 'out' },
+                    { name: 'De rest is leefgeld!', amount: 1385, type: 'in' }
+                ],
+                saveAmount: 1385,
+                warning: 'Zodra dit binnen is, ben je klaar voor vertrek met een enorme pot aan leefgeld!',
+                buttonText: 'Zomer is hier! €1385 in de pot gestort'
+            }
+        ];
+
+        // Haal voortgang op uit het geheugen
+        let savedProgress = JSON.parse(localStorage.getItem('zomerProgress')) || {};
+        let currentPot = 0;
+
+        function renderApp() {
+            const timelineEl = document.getElementById('timeline');
+            timelineEl.innerHTML = '';
+            currentPot = 0;
+
+            plan.forEach((monthData) => {
+                // Bereken de pot stand op basis van voltooide maanden
+                let isDone = savedProgress[monthData.id] === true;
+                if (isDone) {
+                    currentPot += monthData.saveAmount;
+                    // Als Praag in juni betaald is, trek dit uit de pot
+                    if (monthData.id === 'juni') {
+                        currentPot -= 1642.89;
+                    }
+                }
+
+                // Maak de HTML voor de maandkaart
+                const card = document.createElement('div');
+                card.className = `month-card ${isDone ? 'done' : monthData.status}`;
+                if(isDone) card.style.opacity = '0.6';
+
+                let tasksHTML = monthData.tasks.map(task => `
+                    <li class="task-item">
+                        <span class="task-name">${task.fromPot ? '⚠️ ' : '👉 '}${task.name}</span>
+                        <span class="amount-${task.type}">€${task.amount.toFixed(2)}</span>
+                    </li>
+                `).join('');
+
+                let warningHTML = monthData.warning && !isDone ? `<div class="warning-box">🔔 ${monthData.warning}</div>` : '';
+
+                let actionHTML = `
+                    <div class="save-action">
+                        <div>
+                            <strong>Te storten: <span class="amount-save">€${monthData.saveAmount.toFixed(2)}</span></strong>
+                        </div>
+                        <button onclick="toggleMonth('${monthData.id}')" ${isDone ? 'style="background:#48bb78;"' : ''}>
+                            ${isDone ? '✅ Voltooid' : monthData.buttonText}
+                        </button>
+                    </div>
+                `;
+
+                card.innerHTML = `
+                    <div class="month-header">
+                        <h3 class="month-title">${monthData.month}</h3>
+                        <span class="payday">${monthData.paydayText}</span>
+                    </div>
+                    <ul class="task-list">
+                        <li class="task-item">
+                            <span class="task-name">🟢 Inkomsten</span>
+                            <span class="amount-in">€1435.00</span>
+                        </li>
+                        ${tasksHTML}
+                    </ul>
+                    ${warningHTML}
+                    ${actionHTML}
+                `;
+                timelineEl.appendChild(card);
+            });
+
+            // Update de teller bovenaan
+            document.getElementById('displayPot').textContent = `€${currentPot.toFixed(2)}`;
+        }
+
+        // Functie om een maand af te vinken
+        window.toggleMonth = function(monthId) {
+            savedProgress[monthId] = !savedProgress[monthId];
+            localStorage.setItem('zomerProgress', JSON.stringify(savedProgress));
+            renderApp();
+        };
+
+        // Start de app
+        renderApp();
+    </script>
+</body>
+</html>
